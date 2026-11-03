@@ -1,0 +1,388 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>תיקון pH לתמלחת</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=Secular+One&display=swap">
+<style>
+:root{
+  /* Layout: one working column. Inputs first, then the big answer, then the measured curve, then notes.
+     The pH indicator strip (the slider track) is the single flourish. */
+  --bg:#EEF2F0; --card:#FFFFFF; --ink:#14221E; --muted:#52645E; --line:#D3DDD9;
+  --accent:#0B7A68; --accent-ink:#FFFFFF; --hero-line:rgba(255,255,255,.38);
+  --warn:#7A4A00; --warn-bg:#FFF0D2;
+  --band:rgba(11,122,104,.14); --curve:#14221E;
+  --ph6:#E6C233; --ph7:#8FC24B; --ph75:#3DB38A; --ph8:#2BA9A0; --ph9:#3F78D6;
+  --f-display:"Secular One","Rubik","Arial Hebrew",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Hebrew","Segoe UI",Arial,system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1614; --card:#15201D; --ink:#E5EFEB; --muted:#9AAEA7; --line:#2A3B36;
+    --accent:#3FCDB0; --accent-ink:#06211B; --hero-line:rgba(6,33,27,.35);
+    --warn:#F2C277; --warn-bg:#3A2A0C;
+    --band:rgba(63,205,176,.15); --curve:#E5EFEB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1614; --card:#15201D; --ink:#E5EFEB; --muted:#9AAEA7; --line:#2A3B36;
+  --accent:#3FCDB0; --accent-ink:#06211B; --hero-line:rgba(6,33,27,.35);
+  --warn:#F2C277; --warn-bg:#3A2A0C;
+  --band:rgba(63,205,176,.15); --curve:#E5EFEB;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:1.55;
+  padding-block:20px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+.app{max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:16px}
+.app > *{min-width:0}
+
+header h1{font-family:var(--f-display); font-weight:400; font-size:30px; line-height:1.15; margin:0 0 6px; text-wrap:balance}
+header p{margin:0; color:var(--muted); max-width:52ch}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px}
+.field{display:flex; flex-direction:column; gap:8px}
+.field + .field{margin-top:20px}
+.lbl{font-weight:500; font-size:15px}
+.hint{font-size:13px; color:var(--muted); margin:0}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  min-height:44px; min-width:64px; padding:0 14px; cursor:pointer;
+  font:500 17px var(--f-num); color:var(--ink); background:var(--card);
+  border:1.5px solid var(--line); border-radius:10px;
+}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--card); border-color:var(--ink)}
+
+.inwrap{display:flex; align-items:center; gap:10px}
+input[type=number]{
+  width:100%; min-height:48px; padding:0 12px;
+  font:500 20px var(--f-num); color:var(--ink); background:var(--bg);
+  border:1.5px solid var(--line); border-radius:10px;
+}
+.suffix{color:var(--muted); font-size:15px; white-space:nowrap}
+
+.pick{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+.pick .val{font-family:var(--f-num); font-weight:600; font-size:30px; direction:ltr; unicode-bidi:isolate}
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:32px; margin:0;
+  background:transparent; direction:ltr; cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:12px; border-radius:6px;
+  background:linear-gradient(90deg,var(--ph6) 0%,var(--ph7) 30%,var(--ph75) 55%,var(--ph8) 75%,var(--ph9) 100%);
+}
+input[type=range]::-moz-range-track{
+  height:12px; border-radius:6px;
+  background:linear-gradient(90deg,var(--ph6) 0%,var(--ph7) 30%,var(--ph75) 55%,var(--ph8) 75%,var(--ph9) 100%);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; box-sizing:border-box; width:28px; height:28px; margin-top:-8px;
+  border-radius:50%; background:var(--card); border:4px solid var(--ink);
+}
+input[type=range]::-moz-range-thumb{
+  box-sizing:border-box; width:28px; height:28px;
+  border-radius:50%; background:var(--card); border:4px solid var(--ink);
+}
+.ticks{display:flex; justify-content:space-between; padding:0 14px; direction:ltr; font:500 13px var(--f-num); color:var(--muted)}
+.ticks .on{color:var(--accent); font-weight:600}
+
+.note{margin:18px 0 0; padding:10px 12px; border-radius:10px; font-size:14px; background:var(--warn-bg); color:var(--warn)}
+
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+.hero{background:var(--accent); color:var(--accent-ink); border-radius:14px; padding:20px 18px 18px}
+.hero .cap{font-size:14px; font-weight:500}
+.big{display:flex; align-items:baseline; gap:10px; margin:2px 0 2px}
+.big .num{font-family:var(--f-num); font-weight:600; font-size:64px; line-height:1; letter-spacing:-.02em; direction:ltr; unicode-bidi:isolate}
+.big .unit{font-family:var(--f-display); font-size:24px}
+.seg{display:flex; gap:6px; margin-top:12px}
+.seg button{
+  flex:1; min-height:44px; cursor:pointer;
+  font:600 16px var(--f-num); color:var(--accent-ink); background:transparent;
+  border:1.5px solid var(--hero-line); border-radius:10px;
+}
+.seg button[aria-pressed="true"]{background:var(--accent-ink); color:var(--accent); border-color:var(--accent-ink)}
+.hero button:focus-visible{outline-color:var(--accent-ink)}
+.rows{margin-top:16px; border-top:1px solid var(--hero-line)}
+.row{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 0; border-bottom:1px solid var(--hero-line); font-size:15px}
+.row b{font-family:var(--f-num); font-weight:600; text-align:left}
+.how{margin:14px 0 0; font-size:14px}
+
+h2{font-family:var(--f-display); font-weight:400; font-size:20px; line-height:1.2; margin:0 0 4px}
+.chartwrap{direction:ltr; margin-top:12px}
+.chartwrap svg{display:block; max-width:100%}
+svg text{font-family:var(--f-num); font-size:11px; fill:var(--muted)}
+svg text.ptl{fill:var(--ink)}
+svg text.tv{fill:var(--accent); font-weight:600; font-size:12px}
+.grid{stroke:var(--line); stroke-width:1; fill:none}
+.band{fill:var(--band); stroke:none}
+.curve{fill:none; stroke:var(--curve); stroke-width:2; stroke-linejoin:round}
+.climb{fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; stroke-linejoin:round}
+.pt{fill:var(--card); stroke:var(--curve); stroke-width:1.75}
+.mk{fill:none; stroke:var(--accent); stroke-width:1.5; stroke-dasharray:4 3}
+.dot{fill:var(--accent); stroke:var(--card); stroke-width:2.5}
+.ring{fill:var(--card); stroke:var(--accent); stroke-width:3}
+.axis{margin:6px 0 0; text-align:center; font-size:13px; color:var(--muted)}
+.legend{display:flex; flex-wrap:wrap; gap:6px 18px; margin:10px 0 0; font-size:13px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:8px}
+.sw{display:inline-block; width:22px; height:6px; border-radius:3px; background:var(--accent)}
+.sw.b{height:12px; border-radius:2px; background:var(--band); border:1px solid var(--accent)}
+
+.notes ul{list-style:none; margin:10px 0 0; padding:0}
+.notes li{padding:12px 0; border-top:1px solid var(--line); font-size:15px}
+.notes li:first-child{border-top:0; padding-top:4px}
+
+details.card summary{cursor:pointer; font-weight:500; font-size:15px}
+details.card .field{margin-top:14px}
+.foot{margin:0; font-size:13px; color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){ .chip,.seg button{transition:background .12s,color .12s} }
+</style>
+
+<main class="app" dir="rtl" lang="he">
+  <header>
+    <h1>תיקון pH לתמלחת</h1>
+    <p>כמה סודה קאוסטית להוסיף לקוביה. החישוב לפי הניסוי מ-2.11: 100 מ״ל תמלחת שהתחילה ב-pH 5.6, עם תמיסת סודה 0.5%.</p>
+  </header>
+
+  <section class="card" aria-label="נתונים">
+    <div class="field">
+      <span class="lbl" id="cubeLbl">כמה תמלחת יש בקוביה</span>
+      <div class="chips" role="group" aria-labelledby="cubeLbl">
+        <button type="button" class="chip" data-cube="700" aria-pressed="false">700</button>
+        <button type="button" class="chip" data-cube="800" aria-pressed="false">800</button>
+        <button type="button" class="chip" data-cube="900" aria-pressed="false">900</button>
+        <button type="button" class="chip" data-cube="1000" aria-pressed="true">1000</button>
+      </div>
+      <div class="inwrap">
+        <input id="cube" type="number" inputmode="numeric" min="1" step="10" value="1000" aria-labelledby="cubeLbl">
+        <span class="suffix">ליטר</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl" for="start">pH התחלתי של התמלחת</label>
+      <input id="start" type="number" inputmode="decimal" min="0" max="14" step="0.01" value="5.6">
+      <p class="hint">בניסוי מדדת 5.6. תמלחת שמתחילה גבוה יותר צריכה פחות.</p>
+    </div>
+
+    <div class="field">
+      <div class="pick">
+        <label class="lbl" for="target">pH שרוצים להגיע אליו</label>
+        <span class="val" id="targetVal">8.33</span>
+      </div>
+      <input id="target" type="range" min="6" max="9" step="0.01" value="8.33">
+      <div class="ticks" aria-hidden="true"><span>6</span><span>7</span><span class="on">8</span><span class="on">9</span></div>
+      <p class="hint" id="tHint">זו הרמה היציבה: בין 20 ל-40 טיפות ה-pH כמעט לא זז, אז הכמות לא קריטית.</p>
+    </div>
+
+    <p class="note" id="warn" hidden></p>
+  </section>
+
+  <section class="hero" aria-live="polite" aria-label="התוצאה">
+    <div class="cap">להוסיף לקוביה</div>
+    <div class="big"><span class="num" id="resNum">1.4</span><span class="unit" id="resUnit">ליטר</span></div>
+    <div class="cap" id="resOf">מתמיסת סודה קאוסטית 5%</div>
+    <div class="seg" role="group" aria-label="איזו תמיסה מוסיפים">
+      <button type="button" data-stock="0.5" aria-pressed="false">0.5%</button>
+      <button type="button" data-stock="5" aria-pressed="true">5%</button>
+      <button type="button" data-stock="50" aria-pressed="false">50%</button>
+    </div>
+    <div class="rows">
+      <div class="row"><span>שלב ראשון, 80% מהכמות</span><b id="rFirst">1.1 ליטר</b></div>
+      <div class="row"><span>בכוסות מדידה של חצי ליטר</span><b id="rCups">2.8 כוסות</b></div>
+      <div class="row"><span>כמות שנשארת בין pH 8 ל-9</span><b id="rRange">מ-720 מ״ל עד 4.0 ליטר</b></div>
+      <div class="row"><span>בקנה מידה של הניסוי, ל-100 מ״ל</span><b id="rDrops">28 טיפות</b></div>
+    </div>
+    <p class="how">מוסיפים לאט ובערבוב. אחרי 80% ממתינים 15 דקות, מודדים pH ומשלימים בהדרגה.</p>
+  </section>
+
+  <section class="card">
+    <h2>העקומה מהניסוי</h2>
+    <p class="hint">pH של 100 מ״ל תמלחת לפי מספר הטיפות מתמיסת 0.5%.</p>
+    <div class="chartwrap" id="chart"></div>
+    <p class="axis">טיפות מתמיסת 0.5% ל-100 מ״ל (ציר דחוס, כדי שהנקודות הראשונות יהיו קריאות)</p>
+    <div class="legend">
+      <span><i class="sw"></i>החלק שהקוביה עוברת עד היעד</span>
+      <span><i class="sw b"></i>טווח היעד, pH 8 עד 9</span>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>מה העקומה אומרת</h2>
+    <ul>
+      <li>אותה תמלחת ב-pH אחר: העקומה רק זזה. תמלחת שמתחילה ב-6.27 היא כמו הניסוי אחרי 4 טיפות, והמחשבון מוריד אותן לבד. כך גם ל-6, ל-7 ולכל ערך בין 5.6 ל-9.</li>
+      <li>מתחת ל-5.6 אין מדידה. לתמלחת שמתחילה ב-4 לוקחים 100 מ״ל ועושים סבב קצר כמו בניסוי.</li>
+      <li>תמלחת ממקור אחר, או עם חומציות אחרת, צריכה עקומה משלה, גם אם ה-pH ההתחלתי זהה.</li>
+      <li>הכמויות מניחות את התמיסות מהניסוי: 5% חזקה פי 10 מ-0.5%, ו-50% חזקה פי 100. תמיסה חדשה מכינים באותו יחס, אחרת התוצאה לא תתאים.</li>
+    </ul>
+  </section>
+
+  <details class="card">
+    <summary>כיול הקשית</summary>
+    <div class="field">
+      <label class="lbl" for="dpm">כמה טיפות יוצאות ב-1 מ״ל</label>
+      <input id="dpm" type="number" inputmode="decimal" min="5" max="60" step="0.5" value="20">
+      <p class="hint">אותה קשית ואותה זווית נותנות אותו גודל טיפה. כדי למדוד: מטפטפים 200 טיפות מים על משקל מטבח. גרם אחד הוא מ״ל אחד, אז טיפות למ״ל הן 200 חלקי הגרמים. אם יצאו 10 גרם, הערך הוא 20. הערך משפיע ישירות על הכמות שמגיעה לקוביה.</p>
+    </div>
+  </details>
+
+  <p class="foot">הערכה לפי שבע נקודות ניסוי, עם קו ישר ביניהן. אחרי כל תוספת בודקים pH.</p>
+</main>
+
+<script>
+/*PURE-START*/
+const DATA=[[0,5.6],[2,5.85],[4,6.27],[10,7.75],[20,8.31],[40,8.36],[80,9.0]];
+const MIN_PH=DATA[0][1], MAX_PH=DATA[DATA.length-1][1], MAX_D=DATA[DATA.length-1][0];
+const FACTOR={0.5:1, 5:0.1, 50:0.01};
+function phAt(d){
+  if(d<=0) return MIN_PH;
+  for(let i=1;i<DATA.length;i++){
+    if(d<=DATA[i][0]){
+      const a=DATA[i-1], b=DATA[i];
+      return a[1]+(d-a[0])/(b[0]-a[0])*(b[1]-a[1]);
+    }
+  }
+  return MAX_PH;
+}
+function dropsAt(ph){
+  if(ph<=MIN_PH) return 0;
+  for(let i=1;i<DATA.length;i++){
+    if(ph<=DATA[i][1]){
+      const a=DATA[i-1], b=DATA[i];
+      return a[0]+(ph-a[1])/(b[1]-a[1])*(b[0]-a[0]);
+    }
+  }
+  return MAX_D;
+}
+function plan(o){
+  const below=o.start<MIN_PH;
+  const d0=dropsAt(o.start);
+  const d1=dropsAt(o.target);
+  const need=Math.max(0,d1-d0);
+  const toL=drops=>drops/o.dpm*o.cubeL/100*FACTOR[o.stock];
+  const L=toL(need);
+  return {below:below, d0:d0, d1:d1, need:need, litres:L, first:toL(need*0.8),
+    lo:toL(Math.max(0,dropsAt(8)-d0)), hi:toL(Math.max(0,MAX_D-d0)), cups:L/0.5};
+}
+/*PURE-END*/
+
+(function(){
+  const $=id=>document.getElementById(id);
+  const S={stock:5};
+  let last=null;
+
+  function fmt(L){
+    if(!(L>0)) return {n:'0',u:'ליטר'};
+    const ml=L*1000;
+    if(ml<1000){
+      const r=ml<100?Math.round(ml/5)*5:Math.round(ml/10)*10;
+      return {n:String(Math.max(r,1)),u:'מ״ל'};
+    }
+    if(L<10) return {n:(Math.round(L*10)/10).toFixed(1),u:'ליטר'};
+    if(L<100) return {n:(Math.round(L*10)/10).toFixed(1).replace(/\.0$/,''),u:'ליטר'};
+    return {n:String(Math.round(L)),u:'ליטר'};
+  }
+  function range(a,b){
+    const fa=fmt(a), fb=fmt(b);
+    return fa.u===fb.u ? 'מ-'+fa.n+' עד '+fb.n+' '+fb.u : 'מ-'+fa.n+' '+fa.u+' עד '+fb.n+' '+fb.u;
+  }
+  function cups(c,L){
+    if(L<0.25) return 'פחות מכוס';
+    return (Math.round(c*10)/10).toFixed(1).replace(/\.0$/,'')+' כוסות';
+  }
+
+  function drawChart(p){
+    const wrap=$('chart');
+    const w=Math.max(280,Math.floor(wrap.clientWidth||320));
+    const h=Math.round(Math.min(300,Math.max(220,w*0.6)));
+    const m={l:32,r:18,t:22,b:28}, iw=w-m.l-m.r, ih=h-m.t-m.b, Y0=5, Y1=9.5;
+    const sx=d=>m.l+Math.sqrt(d/MAX_D)*iw;
+    const sy=v=>m.t+(1-(v-Y0)/(Y1-Y0))*ih;
+    const f=n=>n.toFixed(1);
+    let s='<rect class="band" x="'+f(m.l)+'" y="'+f(sy(9))+'" width="'+f(iw)+'" height="'+f(sy(8)-sy(9))+'"/>';
+    s+='<text x="2" y="'+(m.t-8)+'">pH</text>';
+    [5,6,7,8,9].forEach(function(v){
+      s+='<line class="grid" x1="'+m.l+'" x2="'+f(m.l+iw)+'" y1="'+f(sy(v))+'" y2="'+f(sy(v))+'"/>';
+      s+='<text x="'+(m.l-7)+'" y="'+f(sy(v)+4)+'" text-anchor="end">'+v+'</text>';
+    });
+    DATA.forEach(function(r){ s+='<text x="'+f(sx(r[0]))+'" y="'+(h-8)+'" text-anchor="middle">'+r[0]+'</text>'; });
+    function path(a,b){
+      let dd=''; const n=Math.max(2,Math.ceil((b-a)/0.5));
+      for(let i=0;i<=n;i++){ const d=a+(b-a)*i/n; dd+=(i?'L':'M')+f(sx(d))+' '+f(sy(phAt(d))); }
+      return dd;
+    }
+    s+='<path class="curve" d="'+path(0,MAX_D)+'"/>';
+    if(p && p.need>0) s+='<path class="climb" d="'+path(p.d0,p.d1)+'"/>';
+    DATA.forEach(function(r,i){
+      const x=sx(r[0]), y=sy(r[1]), lastPt=i===DATA.length-1;
+      s+='<circle class="pt" cx="'+f(x)+'" cy="'+f(y)+'" r="4"/>';
+      s+='<text class="ptl" x="'+f(lastPt?x-7:x+7)+'" y="'+f(y+15)+'" text-anchor="'+(lastPt?'end':'start')+'">'+r[1]+'</text>';
+    });
+    if(p){
+      const x1=sx(p.d1), y1=sy(phAt(p.d1));
+      s+='<line class="mk" x1="'+f(x1)+'" x2="'+f(x1)+'" y1="'+f(m.t-4)+'" y2="'+f(m.t+ih)+'"/>';
+      if(p.d0>0) s+='<circle class="ring" cx="'+f(sx(p.d0))+'" cy="'+f(sy(phAt(p.d0)))+'" r="6"/>';
+      s+='<circle class="dot" cx="'+f(x1)+'" cy="'+f(y1)+'" r="6.5"/>';
+      s+='<text class="tv" x="'+f(x1)+'" y="'+(m.t-8)+'" text-anchor="'+(x1>w-48?'end':'middle')+'">'+phAt(p.d1).toFixed(2)+'</text>';
+    }
+    wrap.innerHTML='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="עקומת ה-pH מהניסוי">'+s+'</svg>';
+  }
+
+  function render(){
+    const cube=parseFloat($('cube').value), start=parseFloat($('start').value),
+          dpm=parseFloat($('dpm').value), target=parseFloat($('target').value);
+    $('targetVal').textContent=target.toFixed(2);
+    $('tHint').hidden=!(target>=8.3 && target<=8.37);
+    document.querySelectorAll('[data-cube]').forEach(function(b){ b.setAttribute('aria-pressed',String(parseFloat(b.dataset.cube)===cube)); });
+    document.querySelectorAll('[data-stock]').forEach(function(b){ b.setAttribute('aria-pressed',String(parseFloat(b.dataset.stock)===S.stock)); });
+    $('resOf').textContent='מתמיסת סודה קאוסטית '+S.stock+'%';
+
+    const warn=$('warn'), msgs=[];
+    const ok=cube>0 && start>0 && dpm>0;
+    if(!ok){
+      $('resNum').textContent='—'; $('resUnit').textContent='';
+      ['rFirst','rCups','rRange','rDrops'].forEach(function(id){ $(id).textContent='—'; });
+      warn.textContent='צריך כמות תמלחת, pH התחלתי וטיפות למ״ל (בכיול הקשית).'; warn.hidden=false;
+      last=null; drawChart(null); return;
+    }
+    const p=plan({cubeL:cube,start:start,target:target,stock:S.stock,dpm:dpm});
+    last=p;
+    const t=fmt(p.litres);
+    $('resNum').textContent=t.n; $('resUnit').textContent=t.u;
+    if(p.need<=0){
+      ['rFirst','rCups','rRange','rDrops'].forEach(function(id){ $(id).textContent='—'; });
+      msgs.push('ה-pH כבר ביעד או מעליו, אין מה להוסיף.');
+    }else{
+      const f1=fmt(p.first);
+      $('rFirst').textContent=f1.n+' '+f1.u;
+      $('rCups').textContent=cups(p.cups,p.litres);
+      $('rRange').textContent=range(p.lo,p.hi);
+      $('rDrops').textContent=Math.round(p.need)+' טיפות';
+    }
+    if(p.below) msgs.push('מתחת ל-pH 5.6 הניסוי לא מכסה. הכמות שמוצגת מחושבת מ-5.6, ולכן היא מינימום. לפני שמוסיפים לקוביה, בודקים 100 מ״ל.');
+    warn.textContent=msgs.join(' '); warn.hidden=msgs.length===0;
+    drawChart(p);
+  }
+
+  ['cube','start','dpm','target'].forEach(function(id){ $(id).addEventListener('input',render); });
+  document.querySelectorAll('[data-cube]').forEach(function(b){
+    b.addEventListener('click',function(){ $('cube').value=b.dataset.cube; render(); });
+  });
+  document.querySelectorAll('[data-stock]').forEach(function(b){
+    b.addEventListener('click',function(){ S.stock=parseFloat(b.dataset.stock); render(); });
+  });
+  if(window.ResizeObserver){ new ResizeObserver(function(){ drawChart(last); }).observe($('chart')); }
+  render();
+})();
+</script>
+
+</body></html>
