@@ -1,8 +1,12 @@
-# תיקון pH לתמלחת סידן
+# כלים לתמלחת קלציום
 
-אתר חישוב בעברית לתיקון pH בתמלחת סידן (calcium brine pH correction).
+אתר אחד עם שני מחשבונים בעברית: **איזון בומה** (איך לערבב מיכלים ומים כדי להגיע לבומה יעד) ו**תיקון pH** (כמה סודה קאוסטית להוסיף לקוביה).
 קובץ HTML יחיד, בלי תלויות: פותחים את `index.html` בדפדפן.
 
-Single-file Hebrew web calculator for pH correction of calcium brine. Open `index.html` in a browser.
+Single-file Hebrew web app with two calculators for calcium brine: Baumé balancing (mixing tanks and water to reach a target Baumé) and pH correction (caustic soda dose per cube).
 
-אתר חי: https://homeserver.tail887ebb.ts.net:10000/
+- אתר חי: https://idanam2.github.io/calcium-brine-tools/
+- שרת ביתי: https://homeserver.tail887ebb.ts.net:10000/
+- קישור ישיר ללשונית: `#bome` או `#ph`
+
+`originals/` מכיל את שני המחשבונים המקוריים. קוד החישוב באתר המאוחד הועתק מהם ללא שינוי.

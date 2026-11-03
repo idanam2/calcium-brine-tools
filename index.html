@@ -1,15 +1,18 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>תיקון pH לתמלחת</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B7A68">
+<title>כלים לתמלחת קלציום</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=Secular+One&display=swap">
 <style>
 :root{
-  /* Layout: one working column. Inputs first, then the big answer, then the measured curve, then notes.
-     The pH indicator strip (the slider track) is the single flourish. */
   --bg:#EEF2F0; --card:#FFFFFF; --ink:#14221E; --muted:#52645E; --line:#D3DDD9;
   --accent:#0B7A68; --accent-ink:#FFFFFF; --hero-line:rgba(255,255,255,.38);
+  --soft:rgba(11,122,104,.10); --bad:#B42318;
   --warn:#7A4A00; --warn-bg:#FFF0D2;
   --band:rgba(11,122,104,.14); --curve:#14221E;
   --ph6:#E6C233; --ph7:#8FC24B; --ph75:#3DB38A; --ph8:#2BA9A0; --ph9:#3F78D6;
@@ -21,6 +24,7 @@
   :root:not([data-theme="light"]){
     --bg:#0E1614; --card:#15201D; --ink:#E5EFEB; --muted:#9AAEA7; --line:#2A3B36;
     --accent:#3FCDB0; --accent-ink:#06211B; --hero-line:rgba(6,33,27,.35);
+    --soft:rgba(63,205,176,.12); --bad:#FF8A80;
     --warn:#F2C277; --warn-bg:#3A2A0C;
     --band:rgba(63,205,176,.15); --curve:#E5EFEB;
     color-scheme:dark;
@@ -29,6 +33,7 @@
 :root[data-theme="dark"]{
   --bg:#0E1614; --card:#15201D; --ink:#E5EFEB; --muted:#9AAEA7; --line:#2A3B36;
   --accent:#3FCDB0; --accent-ink:#06211B; --hero-line:rgba(6,33,27,.35);
+  --soft:rgba(63,205,176,.12); --bad:#FF8A80;
   --warn:#F2C277; --warn-bg:#3A2A0C;
   --band:rgba(63,205,176,.15); --curve:#E5EFEB;
   color-scheme:dark;
@@ -36,17 +41,29 @@
 
 *{box-sizing:border-box}
 body{
-  background:var(--bg); color:var(--ink);
+  margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--f-body); font-size:16px; line-height:1.55;
   padding-block:20px 48px;
   padding-left:max(16px, env(safe-area-inset-left, 0px));
   padding-right:max(16px, env(safe-area-inset-right, 0px));
 }
+img{max-width:100%}
+[hidden]:not([hidden=until-found i]){display:none!important}
 .app{max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:16px}
 .app > *{min-width:0}
 
-header h1{font-family:var(--f-display); font-weight:400; font-size:30px; line-height:1.15; margin:0 0 6px; text-wrap:balance}
-header p{margin:0; color:var(--muted); max-width:52ch}
+.top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+header h1{font-family:var(--f-display); font-weight:400; font-size:30px; line-height:1.15; margin:0; text-wrap:balance}
+.theme{min-width:44px; min-height:44px; cursor:pointer; font-size:18px; color:var(--ink); background:var(--card); border:1.5px solid var(--line); border-radius:10px}
+
+.tabs{display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:5px; background:var(--card); border:1px solid var(--line); border-radius:14px; position:sticky; top:8px; z-index:5}
+.tab{min-height:48px; cursor:pointer; font:500 16px var(--f-body); color:var(--muted); background:transparent; border:0; border-radius:10px}
+.tab[aria-selected="true"]{background:var(--accent); color:var(--accent-ink)}
+
+.panel{display:flex; flex-direction:column; gap:16px}
+.panel > *{min-width:0}
+.panel-head h2{font-family:var(--f-display); font-weight:400; font-size:24px; line-height:1.2; margin:0 0 6px}
+.panel-head p{margin:0; color:var(--muted); max-width:52ch}
 
 .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px}
 .field{display:flex; flex-direction:column; gap:8px}
@@ -144,101 +161,507 @@ svg text.tv{fill:var(--accent); font-weight:600; font-size:12px}
 details.card summary{cursor:pointer; font-weight:500; font-size:15px}
 details.card .field{margin-top:14px}
 .foot{margin:0; font-size:13px; color:var(--muted)}
-@media (prefers-reduced-motion:no-preference){ .chip,.seg button{transition:background .12s,color .12s} }
-</style>
 
-<main class="app" dir="rtl" lang="he">
-  <header>
-    <h1>תיקון pH לתמלחת</h1>
-    <p>כמה סודה קאוסטית להוסיף לקוביה. החישוב לפי הניסוי מ-2.11: 100 מ״ל תמלחת שהתחילה ב-pH 5.6, עם תמיסת סודה 0.5%.</p>
+/* ---- Baume panel (same look, class names kept apart from the pH panel) ---- */
+#panel-bome h2{margin-bottom:12px}
+#panel-bome label{display:block; font-weight:500; font-size:15px; margin-bottom:6px}
+#panel-bome input[type=text]{
+  width:100%; min-height:48px; padding:0 12px; text-align:center; direction:ltr;
+  font:500 20px var(--f-num); color:var(--ink); background:var(--bg);
+  border:1.5px solid var(--line); border-radius:10px;
+}
+#panel-bome button{font:inherit; cursor:pointer}
+.thead,.trow{display:grid; grid-template-columns:44px 1fr 1.2fr 46px; gap:8px; align-items:center}
+.thead{font-size:13px; color:var(--muted); text-align:center; margin-bottom:6px}
+.trow{margin-bottom:8px}
+.tank{height:48px; display:flex; align-items:center; justify-content:center; font:600 18px var(--f-body); color:var(--accent); background:var(--soft); border-radius:10px}
+.del{height:48px; width:46px; font-size:18px; color:var(--bad); background:transparent; border:1.5px solid var(--line); border-radius:10px}
+.add{width:100%; min-height:48px; margin-top:2px; font-size:16px; font-weight:500; color:var(--accent); background:transparent; border:1.5px dashed var(--accent); border-radius:10px}
+.line{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px}
+.line > span{font-weight:500; font-size:15px}
+.stepper{display:flex; align-items:center; gap:10px}
+.stepper button{width:48px; height:48px; font-size:24px; font-weight:600; color:var(--ink); background:var(--card); border:1.5px solid var(--line); border-radius:10px}
+.stepper b{min-width:30px; text-align:center; font:600 22px var(--f-num)}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end}
+.set{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+.reset{margin-top:12px; width:100%; min-height:44px; color:var(--muted); background:transparent; border:1.5px solid var(--line); border-radius:10px}
+.batch{border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px}
+.batch .bt{font-weight:600; margin-bottom:10px}
+.batch ol{margin:0; padding:0 22px 0 0}
+.batch li{margin-bottom:8px; font-size:16px}
+.batch li b{font:600 20px var(--f-num); color:var(--accent)}
+.fin{margin-top:12px; padding:10px 12px; border-radius:10px; font-weight:600; color:var(--accent-ink); background:var(--accent)}
+.left{margin-top:8px; font-size:14px; color:var(--muted)}
+.msg{padding:12px; border-radius:10px; font-size:15px; background:var(--soft)}
+.msg.bad{color:var(--warn); background:var(--warn-bg)}
+.fix{margin-top:14px; padding:12px; border-radius:10px; font-size:16px; background:var(--soft)}
+.fix b{font:600 20px var(--f-num); color:var(--accent)}
+.fix.ok{color:var(--accent); font-weight:600}
+.fix .w{margin-top:6px; font-size:14px; color:var(--warn)}
+
+@media (prefers-reduced-motion:no-preference){ .chip,.seg button,.tab{transition:background .12s,color .12s} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>כלים לתמלחת קלציום</h1>
+    <button type="button" class="theme" id="theme" aria-label="מצב כהה או בהיר" title="מצב כהה או בהיר">◐</button>
   </header>
 
-  <section class="card" aria-label="נתונים">
-    <div class="field">
-      <span class="lbl" id="cubeLbl">כמה תמלחת יש בקוביה</span>
-      <div class="chips" role="group" aria-labelledby="cubeLbl">
-        <button type="button" class="chip" data-cube="700" aria-pressed="false">700</button>
-        <button type="button" class="chip" data-cube="800" aria-pressed="false">800</button>
-        <button type="button" class="chip" data-cube="900" aria-pressed="false">900</button>
-        <button type="button" class="chip" data-cube="1000" aria-pressed="true">1000</button>
+  <nav class="tabs" role="tablist" aria-label="בחירת כלי">
+    <button type="button" class="tab" role="tab" id="tab-bome" aria-controls="panel-bome" aria-selected="true">איזון בומה</button>
+    <button type="button" class="tab" role="tab" id="tab-ph" aria-controls="panel-ph" aria-selected="false">תיקון pH</button>
+  </nav>
+
+  <!-- ============ איזון בומה ============ -->
+  <main class="panel" id="panel-bome" role="tabpanel" aria-labelledby="tab-bome">
+    <div class="panel-head">
+      <h2>מחשבון בומה לתמלחת</h2>
+      <p id="goal"></p>
+    </div>
+
+    <section class="card">
+      <h2>מה יש לי</h2>
+      <div class="thead"><span></span><span>בומה</span><span>ליטר</span><span></span></div>
+      <div id="rows"></div>
+      <button type="button" class="add" id="add">+ הוסף מיכל</button>
+      <div class="line">
+        <span>קוביות ריקות</span>
+        <div class="stepper"><button type="button" data-st="e-" aria-label="פחות">−</button><b id="eV">1</b><button type="button" data-st="e+" aria-label="יותר">+</button></div>
       </div>
-      <div class="inwrap">
-        <input id="cube" type="number" inputmode="numeric" min="1" step="10" value="1000" aria-labelledby="cubeLbl">
-        <span class="suffix">ליטר</span>
+    </section>
+
+    <section class="card">
+      <h2>מה אני צריך</h2>
+      <div class="two">
+        <div><label for="per">ליטר בכל קובייה</label><input type="text" inputmode="decimal" id="per" value="900"></div>
+        <div><label>כמה קוביות</label>
+          <div class="stepper"><button type="button" data-st="c-" aria-label="פחות">−</button><b id="cV">1</b><button type="button" data-st="c+" aria-label="יותר">+</button></div>
+        </div>
       </div>
-    </div>
+      <p class="hint" id="rangeHint" style="margin-top:10px"></p>
+    </section>
 
-    <div class="field">
-      <label class="lbl" for="start">pH התחלתי של התמלחת</label>
-      <input id="start" type="number" inputmode="decimal" min="0" max="14" step="0.01" value="5.6">
-      <p class="hint">בניסוי מדדת 5.6. תמלחת שמתחילה גבוה יותר צריכה פחות.</p>
-    </div>
+    <section class="card">
+      <h2>מה לעשות</h2>
+      <div id="result"></div>
+    </section>
 
-    <div class="field">
-      <div class="pick">
-        <label class="lbl" for="target">pH שרוצים להגיע אליו</label>
-        <span class="val" id="targetVal">8.33</span>
+    <section class="card">
+      <h2>מדדתי — תיקון</h2>
+      <div class="two">
+        <div><label for="mB">בומה שמדדתי</label><input type="text" inputmode="decimal" id="mB" placeholder="למשל 33.5"></div>
+        <div><label for="mV">ליטר בקובייה</label><input type="text" inputmode="decimal" id="mV"></div>
       </div>
-      <input id="target" type="range" min="6" max="9" step="0.01" value="8.33">
-      <div class="ticks" aria-hidden="true"><span>6</span><span>7</span><span class="on">8</span><span class="on">9</span></div>
-      <p class="hint" id="tHint">זו הרמה היציבה: בין 20 ל-40 טיפות ה-pH כמעט לא זז, אז הכמות לא קריטית.</p>
+      <div id="fix"></div>
+    </section>
+
+    <details class="card" id="settings">
+      <summary>הגדרות</summary>
+      <div class="set">
+        <div><label for="sT">בומה יעד</label><input type="text" inputmode="decimal" id="sT"></div>
+        <div><label for="sTol">סבילות בומה ±</label><input type="text" inputmode="decimal" id="sTol"></div>
+        <div><label for="sRange">טווח כמות ± (ליטר)</label><input type="text" inputmode="decimal" id="sRange"></div>
+        <div><label for="sCap">נפח קובייה (ליטר)</label><input type="text" inputmode="decimal" id="sCap"></div>
+      </div>
+      <p class="hint" style="margin-top:10px">ההגדרות נשמרות בדפדפן של המכשיר הזה.</p>
+      <button type="button" class="reset" id="reset">איפוס לברירת מחדל</button>
+    </details>
+
+    <p class="foot">החישוב בקירוב. תמיד למדוד עם ארומטר אחרי הערבוב.</p>
+  </main>
+
+  <!-- ============ תיקון pH ============ -->
+  <main class="panel" id="panel-ph" role="tabpanel" aria-labelledby="tab-ph" hidden>
+    <div class="panel-head">
+      <h2>תיקון pH לתמלחת</h2>
+      <p>כמה סודה קאוסטית להוסיף לקוביה. החישוב לפי הניסוי מ-2.11: 100 מ״ל תמלחת שהתחילה ב-pH 5.6, עם תמיסת סודה 0.5%.</p>
     </div>
 
-    <p class="note" id="warn" hidden></p>
-  </section>
+    <section class="card" aria-label="נתונים">
+      <div class="field">
+        <span class="lbl" id="cubeLbl">כמה תמלחת יש בקוביה</span>
+        <div class="chips" role="group" aria-labelledby="cubeLbl">
+          <button type="button" class="chip" data-cube="700" aria-pressed="false">700</button>
+          <button type="button" class="chip" data-cube="800" aria-pressed="false">800</button>
+          <button type="button" class="chip" data-cube="900" aria-pressed="false">900</button>
+          <button type="button" class="chip" data-cube="1000" aria-pressed="true">1000</button>
+        </div>
+        <div class="inwrap">
+          <input id="cube" type="number" inputmode="numeric" min="1" step="10" value="1000" aria-labelledby="cubeLbl">
+          <span class="suffix">ליטר</span>
+        </div>
+      </div>
 
-  <section class="hero" aria-live="polite" aria-label="התוצאה">
-    <div class="cap">להוסיף לקוביה</div>
-    <div class="big"><span class="num" id="resNum">1.4</span><span class="unit" id="resUnit">ליטר</span></div>
-    <div class="cap" id="resOf">מתמיסת סודה קאוסטית 5%</div>
-    <div class="seg" role="group" aria-label="איזו תמיסה מוסיפים">
-      <button type="button" data-stock="0.5" aria-pressed="false">0.5%</button>
-      <button type="button" data-stock="5" aria-pressed="true">5%</button>
-      <button type="button" data-stock="50" aria-pressed="false">50%</button>
-    </div>
-    <div class="rows">
-      <div class="row"><span>שלב ראשון, 80% מהכמות</span><b id="rFirst">1.1 ליטר</b></div>
-      <div class="row"><span>בכוסות מדידה של חצי ליטר</span><b id="rCups">2.8 כוסות</b></div>
-      <div class="row"><span>כמות שנשארת בין pH 8 ל-9</span><b id="rRange">מ-720 מ״ל עד 4.0 ליטר</b></div>
-      <div class="row"><span>בקנה מידה של הניסוי, ל-100 מ״ל</span><b id="rDrops">28 טיפות</b></div>
-    </div>
-    <p class="how">מוסיפים לאט ובערבוב. אחרי 80% ממתינים 15 דקות, מודדים pH ומשלימים בהדרגה.</p>
-  </section>
+      <div class="field">
+        <label class="lbl" for="start">pH התחלתי של התמלחת</label>
+        <input id="start" type="number" inputmode="decimal" min="0" max="14" step="0.01" value="5.6">
+        <p class="hint">בניסוי מדדת 5.6. תמלחת שמתחילה גבוה יותר צריכה פחות.</p>
+      </div>
 
-  <section class="card">
-    <h2>העקומה מהניסוי</h2>
-    <p class="hint">pH של 100 מ״ל תמלחת לפי מספר הטיפות מתמיסת 0.5%.</p>
-    <div class="chartwrap" id="chart"></div>
-    <p class="axis">טיפות מתמיסת 0.5% ל-100 מ״ל (ציר דחוס, כדי שהנקודות הראשונות יהיו קריאות)</p>
-    <div class="legend">
-      <span><i class="sw"></i>החלק שהקוביה עוברת עד היעד</span>
-      <span><i class="sw b"></i>טווח היעד, pH 8 עד 9</span>
-    </div>
-  </section>
+      <div class="field">
+        <div class="pick">
+          <label class="lbl" for="target">pH שרוצים להגיע אליו</label>
+          <span class="val" id="targetVal">8.33</span>
+        </div>
+        <input id="target" type="range" min="6" max="9" step="0.01" value="8.33">
+        <div class="ticks" aria-hidden="true"><span>6</span><span>7</span><span class="on">8</span><span class="on">9</span></div>
+        <p class="hint" id="tHint">זו הרמה היציבה: בין 20 ל-40 טיפות ה-pH כמעט לא זז, אז הכמות לא קריטית.</p>
+      </div>
 
-  <section class="notes">
-    <h2>מה העקומה אומרת</h2>
-    <ul>
-      <li>אותה תמלחת ב-pH אחר: העקומה רק זזה. תמלחת שמתחילה ב-6.27 היא כמו הניסוי אחרי 4 טיפות, והמחשבון מוריד אותן לבד. כך גם ל-6, ל-7 ולכל ערך בין 5.6 ל-9.</li>
-      <li>מתחת ל-5.6 אין מדידה. לתמלחת שמתחילה ב-4 לוקחים 100 מ״ל ועושים סבב קצר כמו בניסוי.</li>
-      <li>תמלחת ממקור אחר, או עם חומציות אחרת, צריכה עקומה משלה, גם אם ה-pH ההתחלתי זהה.</li>
-      <li>הכמויות מניחות את התמיסות מהניסוי: 5% חזקה פי 10 מ-0.5%, ו-50% חזקה פי 100. תמיסה חדשה מכינים באותו יחס, אחרת התוצאה לא תתאים.</li>
-    </ul>
-  </section>
+      <p class="note" id="warn" hidden></p>
+    </section>
 
-  <details class="card">
-    <summary>כיול הקשית</summary>
-    <div class="field">
-      <label class="lbl" for="dpm">כמה טיפות יוצאות ב-1 מ״ל</label>
-      <input id="dpm" type="number" inputmode="decimal" min="5" max="60" step="0.5" value="20">
-      <p class="hint">אותה קשית ואותה זווית נותנות אותו גודל טיפה. כדי למדוד: מטפטפים 200 טיפות מים על משקל מטבח. גרם אחד הוא מ״ל אחד, אז טיפות למ״ל הן 200 חלקי הגרמים. אם יצאו 10 גרם, הערך הוא 20. הערך משפיע ישירות על הכמות שמגיעה לקוביה.</p>
-    </div>
-  </details>
+    <section class="hero" aria-live="polite" aria-label="התוצאה">
+      <div class="cap">להוסיף לקוביה</div>
+      <div class="big"><span class="num" id="resNum">1.4</span><span class="unit" id="resUnit">ליטר</span></div>
+      <div class="cap" id="resOf">מתמיסת סודה קאוסטית 5%</div>
+      <div class="seg" role="group" aria-label="איזו תמיסה מוסיפים">
+        <button type="button" data-stock="0.5" aria-pressed="false">0.5%</button>
+        <button type="button" data-stock="5" aria-pressed="true">5%</button>
+        <button type="button" data-stock="50" aria-pressed="false">50%</button>
+      </div>
+      <div class="rows">
+        <div class="row"><span>שלב ראשון, 80% מהכמות</span><b id="rFirst">1.1 ליטר</b></div>
+        <div class="row"><span>בכוסות מדידה של חצי ליטר</span><b id="rCups">2.8 כוסות</b></div>
+        <div class="row"><span>כמות שנשארת בין pH 8 ל-9</span><b id="rRange">מ-720 מ״ל עד 4.0 ליטר</b></div>
+        <div class="row"><span>בקנה מידה של הניסוי, ל-100 מ״ל</span><b id="rDrops">28 טיפות</b></div>
+      </div>
+      <p class="how">מוסיפים לאט ובערבוב. אחרי 80% ממתינים 15 דקות, מודדים pH ומשלימים בהדרגה.</p>
+    </section>
 
-  <p class="foot">הערכה לפי שבע נקודות ניסוי, עם קו ישר ביניהן. אחרי כל תוספת בודקים pH.</p>
-</main>
+    <section class="card">
+      <h2>העקומה מהניסוי</h2>
+      <p class="hint">pH של 100 מ״ל תמלחת לפי מספר הטיפות מתמיסת 0.5%.</p>
+      <div class="chartwrap" id="chart"></div>
+      <p class="axis">טיפות מתמיסת 0.5% ל-100 מ״ל (ציר דחוס, כדי שהנקודות הראשונות יהיו קריאות)</p>
+      <div class="legend">
+        <span><i class="sw"></i>החלק שהקוביה עוברת עד היעד</span>
+        <span><i class="sw b"></i>טווח היעד, pH 8 עד 9</span>
+      </div>
+    </section>
+
+    <section class="notes">
+      <h2>מה העקומה אומרת</h2>
+      <ul>
+        <li>אותה תמלחת ב-pH אחר: העקומה רק זזה. תמלחת שמתחילה ב-6.27 היא כמו הניסוי אחרי 4 טיפות, והמחשבון מוריד אותן לבד. כך גם ל-6, ל-7 ולכל ערך בין 5.6 ל-9.</li>
+        <li>מתחת ל-5.6 אין מדידה. לתמלחת שמתחילה ב-4 לוקחים 100 מ״ל ועושים סבב קצר כמו בניסוי.</li>
+        <li>תמלחת ממקור אחר, או עם חומציות אחרת, צריכה עקומה משלה, גם אם ה-pH ההתחלתי זהה.</li>
+        <li>הכמויות מניחות את התמיסות מהניסוי: 5% חזקה פי 10 מ-0.5%, ו-50% חזקה פי 100. תמיסה חדשה מכינים באותו יחס, אחרת התוצאה לא תתאים.</li>
+      </ul>
+    </section>
+
+    <details class="card">
+      <summary>כיול הקשית</summary>
+      <div class="field">
+        <label class="lbl" for="dpm">כמה טיפות יוצאות ב-1 מ״ל</label>
+        <input id="dpm" type="number" inputmode="decimal" min="5" max="60" step="0.5" value="20">
+        <p class="hint">אותה קשית ואותה זווית נותנות אותו גודל טיפה. כדי למדוד: מטפטפים 200 טיפות מים על משקל מטבח. גרם אחד הוא מ״ל אחד, אז טיפות למ״ל הן 200 חלקי הגרמים. אם יצאו 10 גרם, הערך הוא 20. הערך משפיע ישירות על הכמות שמגיעה לקוביה.</p>
+      </div>
+    </details>
+
+    <p class="foot">הערכה לפי שבע נקודות ניסוי, עם קו ישר ביניהן. אחרי כל תוספת בודקים pH.</p>
+  </main>
+</div>
 
 <script>
+/* ===== איזון בומה: הלוגיקה והחישוב מועתקים ללא שינוי מ-calcium-calc.html ===== */
+(function(){
+// ===SOLVER START===
+function sg(b){return 145/(145-b);}
+function bomeOf(s){return 145-145/s;}
+
+function combos(n,k){
+  var out=[];
+  (function rec(start,cur){
+    if(cur.length===k){out.push(cur.slice());return;}
+    for(var i=start;i<n;i++){cur.push(i);rec(i+1,cur);cur.pop();}
+  })(0,[]);
+  return out;
+}
+
+// P: {sources:[{id,label,b,l}], empties, T, per, range, cap, tol}
+function solveBatch(P){
+  var sources=P.sources,empties=P.empties,T=P.T,per=P.per,range=P.range,cap=P.cap,tol=P.tol;
+  var sgT=sg(T);
+  var Vlo=Math.max(1,per-range),Vhi=Math.min(per+range,cap);
+  if(Vlo>Vhi)return null;
+  var Vs=[],off,V;
+  for(off=0;off<=range+5;off+=5){
+    [per-off,per+off].forEach(function(v){
+      if(v>=Vlo-1e-9&&v<=Vhi+1e-9&&Vs.indexOf(v)<0)Vs.push(v);
+    });
+  }
+  [Vlo,Vhi].forEach(function(v){if(Vs.indexOf(v)<0)Vs.push(v);});
+
+  var dests=[];
+  if(empties>0)dests.push({id:'empty',empty:true,base:0,sg:sgT});
+  sources.forEach(function(s){dests.push({id:s.id,empty:false,base:s.l,sg:sg(s.b),src:s});});
+
+  var best=null;
+
+  function two(S,R,d1,d2,av1,av2){
+    if(Math.abs(d1-d2)<1e-9)return null;
+    var a1=(R-S*d2)/(d1-d2),a2=S-a1;
+    if(a1>=1&&a2>=1&&a1<=av1+1e-9&&a2<=av2+1e-9)return [a1,a2];
+    return null;
+  }
+
+  function attempt(base,dd,it){
+    var k=it.length,R=-base*dd;
+    var d=it.map(function(x){return x.sg-sgT;});
+    var i,j,S,r,a,a3;
+    if(k===0){
+      if(base<=0)return null;
+      return (Math.abs(bomeOf(sgT+dd)-T)<=tol&&base>=Vlo&&base<=Vhi)?[]:null;
+    }
+    if(k===1){
+      if(Math.abs(d[0])<1e-9){
+        if(Math.abs(R)>1e-6)return null;
+        for(i=0;i<Vs.length;i++){a=Vs[i]-base;if(a>=1&&a<=it[0].avail)return [a];}
+        return null;
+      }
+      a=R/d[0];V=base+a;
+      if(a>=1&&a<=it[0].avail&&V>=Vlo-1e-9&&V<=Vhi+1e-9)return [a];
+      return null;
+    }
+    if(k===2){
+      for(i=0;i<Vs.length;i++){
+        S=Vs[i]-base;if(S<2)continue;
+        r=two(S,R,d[0],d[1],it[0].avail,it[1].avail);
+        if(r)return r;
+      }
+      return null;
+    }
+    for(i=0;i<Vs.length;i++){
+      var S0=Vs[i]-base;
+      for(a3=5;a3<=Math.min(it[2].avail,S0-2);a3+=5){
+        r=two(S0-a3,R-a3*d[2],d[0],d[1],it[0].avail,it[1].avail);
+        if(r)return r.concat([a3]);
+      }
+    }
+    return null;
+  }
+
+  dests.forEach(function(dest){
+    var items=[];
+    sources.forEach(function(s){
+      if(s.id!==dest.id)items.push({id:s.id,label:s.label,b:s.b,sg:sg(s.b),avail:s.l,water:false});
+    });
+    items.push({id:'water',label:'מים',b:0,sg:1,avail:cap,water:true});
+    var dd=dest.empty?0:dest.sg-sgT;
+    for(var k=0;k<=3;k++){
+      combos(items.length,k).forEach(function(c){
+        var it=c.map(function(i){return items[i];});
+        var raw=attempt(dest.base,dd,it);
+        if(!raw)return;
+        var amts=raw.map(Math.round);
+        var ok=true,mass=dest.base*dest.sg,vol=dest.base;
+        amts.forEach(function(a,i){
+          if(a<1||a>it[i].avail)ok=false;
+          mass+=a*it[i].sg;vol+=a;
+        });
+        if(!ok||vol>cap+1e-9||vol<Vlo-0.5||vol>Vhi+0.5)return;
+        var bf=k===0?bomeOf(dest.sg):bomeOf(mass/vol);
+        if(Math.abs(bf-T)>tol+1e-9)return;
+        var hasW=it.some(function(x){return x.water;});
+        var cost=it.filter(function(x){return !x.water;}).length+(hasW?0.3:0);
+        var key=[cost,Math.abs(vol-per),k];
+        if(best){
+          for(var q=0;q<3;q++){
+            if(key[q]<best.key[q]){break;}
+            if(key[q]>best.key[q]){return;}
+          }
+          if(q===3)return;
+        }
+        var pours=it.map(function(x,i){return {id:x.id,label:x.label,b:x.b,water:x.water,amt:amts[i]};});
+        pours.sort(function(a,b){return a.water-b.water||b.amt-a.amt;});
+        best={key:key,dest:dest,pours:pours,V:vol,b:bf,cost:cost};
+      });
+    }
+  });
+  return best;
+}
+
+// P: solveBatch fields + cubes
+function planAll(P){
+  var inv=P.sources.map(function(s){return {id:s.id,label:s.label,b:s.b,l:s.l};});
+  var empties=P.empties,usedEmpty=0,batches=[],i;
+  for(i=0;i<P.cubes;i++){
+    var sol=solveBatch({sources:inv,empties:empties,T:P.T,per:P.per,range:P.range,cap:P.cap,tol:P.tol});
+    if(!sol){batches.push({fail:true});break;}
+    sol.pours.forEach(function(p){
+      if(p.water)return;
+      inv.forEach(function(s){if(s.id===p.id)s.l-=p.amt;});
+    });
+    if(sol.dest.empty){empties--;usedEmpty++;sol.emptyNo=usedEmpty;}
+    else{
+      sol.destInit={label:sol.dest.src.label,b:sol.dest.src.b,l:sol.dest.src.l};
+      inv=inv.filter(function(s){return s.id!==sol.dest.id;});
+    }
+    batches.push(sol);
+  }
+  return {batches:batches,inv:inv,emptiesLeft:empties};
+}
+// ===SOLVER END===
+
+var DEF={T:32.2,tol:0.2,range:50,cap:1000};
+var S={rows:[{b:'',l:''},{b:'',l:''}],empties:1,cubes:1,set:{T:DEF.T,tol:DEF.tol,range:DEF.range,cap:DEF.cap}};
+var LET='אבגדהוזחטיכלמנסעפצקרשת';
+var last=null;
+
+function $(id){return document.getElementById(id);}
+function num(v){var x=parseFloat(String(v).replace(',','.'));return isFinite(x)?x:NaN;}
+function fb(b){return String(Math.round(b*10)/10);}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+
+try{
+  var saved=JSON.parse(localStorage.getItem('ca-calc-set')||'null');
+  if(saved){['T','tol','range','cap'].forEach(function(k){if(isFinite(saved[k])&&saved[k]>0)S.set[k]=saved[k];});}
+}catch(e){}
+function saveSet(){try{localStorage.setItem('ca-calc-set',JSON.stringify(S.set));}catch(e){}}
+
+function renderSettings(){
+  $('sT').value=S.set.T;$('sTol').value=S.set.tol;$('sRange').value=S.set.range;$('sCap').value=S.set.cap;
+  $('goal').textContent='יעד: '+fb(S.set.T)+'° בומה';
+}
+
+function renderRows(){
+  var box=$('rows');box.innerHTML='';
+  S.rows.forEach(function(r,i){
+    var row=document.createElement('div');row.className='trow';
+    var chip=document.createElement('div');chip.className='tank';chip.textContent=LET[i]||(i+1);
+    var b=document.createElement('input');b.type='text';b.inputMode='decimal';b.placeholder='41';b.value=r.b;b.setAttribute('aria-label','בומה מיכל '+(LET[i]||i+1));
+    var l=document.createElement('input');l.type='text';l.inputMode='decimal';l.placeholder='500';l.value=r.l;l.setAttribute('aria-label','ליטר מיכל '+(LET[i]||i+1));
+    var d=document.createElement('button');d.className='del';d.textContent='✕';d.setAttribute('aria-label','מחק מיכל');
+    b.addEventListener('input',function(){r.b=b.value;calc();});
+    l.addEventListener('input',function(){r.l=l.value;calc();});
+    d.addEventListener('click',function(){S.rows.splice(i,1);renderRows();calc();});
+    row.appendChild(chip);row.appendChild(b);row.appendChild(l);row.appendChild(d);
+    box.appendChild(row);
+  });
+}
+
+function validSources(){
+  var out=[];
+  S.rows.forEach(function(r,i){
+    var b=num(r.b),l=num(r.l);
+    if(isFinite(b)&&isFinite(l)&&b>=0&&b<60&&l>0)out.push({id:'t'+i,label:LET[i]||String(i+1),b:b,l:l});
+  });
+  return out;
+}
+
+function tankRef(label){return 'מיכל '+label;}
+
+function calc(){
+  var T=S.set.T,per=num($('per').value);
+  var range=S.set.range,cap=S.set.cap;
+  $('eV').textContent=S.empties;$('cV').textContent=S.cubes;
+  $('rangeHint').textContent=isFinite(per)?('אפשר בין '+Math.max(0,Math.round(per-range))+' ל-'+Math.min(Math.round(per+range),cap)+' ליטר בכל קובייה.'):'';
+  var res=$('result');
+  var srcs=validSources();
+  last=null;
+  if(!srcs.length){res.innerHTML='<div class="msg">הכניסו למעלה בומה וליטרים של כל מיכל שיש לכם.</div>';updateFix();return;}
+  if(!isFinite(per)||per<=0){res.innerHTML='<div class="msg">כתבו כמה ליטר צריך בכל קובייה.</div>';updateFix();return;}
+  var plan=planAll({sources:srcs,empties:S.empties,cubes:S.cubes,T:T,per:per,range:range,cap:cap,tol:S.set.tol});
+  last={plan:plan,srcs:srcs};
+  var html='';
+  plan.batches.forEach(function(sol,bi){
+    if(sol.fail){
+      html+='<div class="msg bad">'+(bi>0?'לקובייה '+(bi+1)+' ':'')+'לא מצאתי דרך להגיע ל-'+fb(T)+'° עם מה שיש (עד 3 פעולות). צריך תמלחת חזקה מ-'+fb(T)+'° (אפשר להחליש עם מים), מספיק נפח, או אולי עוד קובייה ריקה. אפשר גם להרחיב את טווח הכמות בהגדרות.</div>';
+      return;
+    }
+    var title;
+    if(sol.dest.empty)title='קובייה ריקה'+(S.empties>1?' '+sol.emptyNo:'');
+    else title=tankRef(sol.destInit.label)+' (יש בו כבר '+Math.round(sol.destInit.l)+' ליטר בבומה '+fb(sol.destInit.b)+')';
+    var destShort=sol.dest.empty?title:tankRef(sol.destInit.label);
+    html+='<div class="batch"><div class="bt">'+(S.cubes>1?'קובייה '+(bi+1)+' · ':'')+'מערבבים ב: '+esc(title)+'</div>';
+    if(!sol.pours.length){
+      html+='<div>'+esc(tankRef(sol.destInit.label))+' כבר בבומה '+fb(sol.destInit.b)+'. אין צורך לערבב.</div>';
+    }else{
+      html+='<ol>';
+      sol.pours.forEach(function(p){
+        if(p.water)html+='<li>הוסיפו <b>'+p.amt+'</b> ליטר מים אל '+esc(destShort)+'</li>';
+        else html+='<li>העבירו <b>'+p.amt+'</b> ליטר מתוך '+esc(tankRef(p.label))+' ('+fb(p.b)+'°) אל '+esc(destShort)+'</li>';
+      });
+      html+='</ol>';
+    }
+    html+='<div class="fin">יתקבלו כ-'+Math.round(sol.V)+' ליטר בבומה '+(Math.round(sol.b*10)/10).toFixed(1)+'</div></div>';
+  });
+  var okAll=plan.batches.length&&!plan.batches[plan.batches.length-1].fail;
+  var left=plan.inv.filter(function(s){return s.l>=1;});
+  if(plan.batches.some(function(x){return !x.fail;})){
+    var parts=left.map(function(s){return tankRef(s.label)+': '+Math.round(s.l)+' ליטר ('+fb(s.b)+'°)';});
+    if(plan.emptiesLeft>0)parts.push('קוביות ריקות: '+plan.emptiesLeft);
+    if(parts.length)html+='<div class="left"><b>נשאר:</b> '+parts.join(' · ')+'</div>';
+  }
+  res.innerHTML=html;
+  var first=plan.batches[0];
+  $('mV').placeholder=(first&&!first.fail)?String(Math.round(first.V)):'';
+  updateFix();
+}
+
+function updateFix(){
+  var out=$('fix'),T=S.set.T,cap=S.set.cap;
+  var m=num($('mB').value);
+  if(!isFinite(m)||m<=0||m>=60){out.innerHTML='';return;}
+  var V=num($('mV').value);
+  if(!isFinite(V)||V<=0)V=num($('mV').placeholder);
+  if(!isFinite(V)||V<=0){out.innerHTML='<div class="fix">כתבו כמה ליטר יש בקובייה.</div>';return;}
+  if(Math.abs(m-T)<=S.set.tol){out.innerHTML='<div class="fix ok">בטווח. אין צורך בתיקון.</div>';return;}
+  var sgT=sg(T),sgM=sg(m),html,x,newV,warn='';
+  if(m>T){
+    x=V*(sgM-sgT)/(sgT-1);
+    newV=V+x;
+    html='הוסיפו <b>'+Math.round(x)+'</b> ליטר מים. יהיו כ-'+Math.round(newV)+' ליטר.';
+  }else{
+    var pool=(last&&last.plan)?last.plan.inv.filter(function(s){return s.l>=1;}):[];
+    if(!pool.length&&last)pool=last.srcs;
+    var strong=pool.filter(function(s){return s.b>T+0.05;}).sort(function(a,b){return b.b-a.b;})[0];
+    if(!strong){out.innerHTML='<div class="fix">צריך תמלחת חזקה מ-'+fb(T)+'° כדי להעלות את הבומה, ואין כזו בין המיכלים שנשארו.</div>';return;}
+    x=V*(sgT-sgM)/(sg(strong.b)-sgT);
+    newV=V+x;
+    html='הוסיפו <b>'+Math.round(x)+'</b> ליטר מתוך '+esc(tankRef(strong.label))+' ('+fb(strong.b)+'°). יהיו כ-'+Math.round(newV)+' ליטר.';
+    if(strong.l<x)warn+='<div class="w">במיכל הזה נשארו רק '+Math.round(strong.l)+' ליטר.</div>';
+  }
+  if(newV>cap)warn+='<div class="w">לא ייכנס בקובייה של '+cap+' ליטר. אפשר לעבור לקובייה אחרת או להוסיף פחות ולמדוד שוב.</div>';
+  out.innerHTML='<div class="fix">'+html+warn+'</div>';
+}
+
+// wiring
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-st]');if(!t)return;
+  var a=t.getAttribute('data-st');
+  if(a==='e-')S.empties=Math.max(0,S.empties-1);
+  if(a==='e+')S.empties=Math.min(5,S.empties+1);
+  if(a==='c-')S.cubes=Math.max(1,S.cubes-1);
+  if(a==='c+')S.cubes=Math.min(5,S.cubes+1);
+  calc();
+});
+$('add').addEventListener('click',function(){
+  if(S.rows.length>=12)return;
+  S.rows.push({b:'',l:''});renderRows();calc();
+  var ins=$('rows').querySelectorAll('input');if(ins.length>=2)ins[ins.length-2].focus();
+});
+['per','mB','mV'].forEach(function(id){$(id).addEventListener('input',function(){id==='per'?calc():updateFix();});});
+[['sT','T'],['sTol','tol'],['sRange','range'],['sCap','cap']].forEach(function(p){
+  $(p[0]).addEventListener('input',function(){
+    var v=num($(p[0]).value);
+    if(isFinite(v)&&v>0){S.set[p[1]]=v;saveSet();$('goal').textContent='יעד: '+fb(S.set.T)+'° בומה';calc();}
+  });
+});
+$('reset').addEventListener('click',function(){
+  S.set={T:DEF.T,tol:DEF.tol,range:DEF.range,cap:DEF.cap};saveSet();renderSettings();calc();
+});
+
+renderSettings();renderRows();calc();
+})();
+</script>
+
+<script>
+/* ===== תיקון pH: הלוגיקה והחישוב מועתקים ללא שינוי מ-"תיקון pH לתמלחת.html" ===== */
+(function(){
 /*PURE-START*/
 const DATA=[[0,5.6],[2,5.85],[4,6.27],[10,7.75],[20,8.31],[40,8.36],[80,9.0]];
 const MIN_PH=DATA[0][1], MAX_PH=DATA[DATA.length-1][1], MAX_D=DATA[DATA.length-1][0];
@@ -383,6 +806,37 @@ function plan(o){
   if(window.ResizeObserver){ new ResizeObserver(function(){ drawChart(last); }).observe($('chart')); }
   render();
 })();
+})();
 </script>
 
-</body></html>
+<script>
+/* ===== בחירת כלי ומצב כהה/בהיר ===== */
+(function(){
+  var tabs={bome:document.getElementById('tab-bome'),ph:document.getElementById('tab-ph')};
+  var panels={bome:document.getElementById('panel-bome'),ph:document.getElementById('panel-ph')};
+  function get(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function put(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function show(name){
+    Object.keys(tabs).forEach(function(k){
+      tabs[k].setAttribute('aria-selected',String(k===name));
+      panels[k].hidden=(k!==name);
+    });
+    put('cb-tab',name);
+    try{history.replaceState(null,'','#'+name);}catch(e){}
+  }
+  Object.keys(tabs).forEach(function(k){tabs[k].addEventListener('click',function(){show(k);});});
+  var h=(location.hash||'').replace('#','');
+  show(tabs[h]?h:(tabs[get('cb-tab')]?get('cb-tab'):'bome'));
+
+  var root=document.documentElement,btn=document.getElementById('theme');
+  var saved=get('cb-theme');
+  if(saved==='light'||saved==='dark')root.setAttribute('data-theme',saved);
+  btn.addEventListener('click',function(){
+    var dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme:dark)').matches);
+    var next=dark?'light':'dark';
+    root.setAttribute('data-theme',next);put('cb-theme',next);
+  });
+})();
+</script>
+</body>
+</html>
