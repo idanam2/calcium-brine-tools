@@ -6,7 +6,6 @@
 Single-file Hebrew web app with two calculators for calcium brine: Baumé balancing (mixing tanks and water to reach a target Baumé) and pH correction (caustic soda dose per cube).
 
 - אתר חי: https://idanam2.github.io/calcium-brine-tools/
-- שרת ביתי: https://homeserver.tail887ebb.ts.net:10000/
 - קישור ישיר ללשונית: `#bome` או `#ph`
 
 `originals/` מכיל את שני המחשבונים המקוריים. קוד החישוב באתר המאוחד הועתק מהם ללא שינוי.
